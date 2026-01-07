@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nubank Clone - Versão Completa com Rolagem</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* RESET E CONFIGURAÇÕES GERAIS */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        html, body { background-color: #ffffff; color: #000; width: 100%; height: 100%; }
+        
+        .editable { cursor: pointer; border-radius: 4px; display: inline-block; transition: background 0.2s; }
+        .editable:focus { outline: none; background: #fdfaff; border-bottom: 2px solid #820ad1; }
+        .hidden { display: none !important; }
+
+        /* --- TELA 1: HOME (PERMITE ROLAGEM VERTICAL) --- */
+        #home-screen { width: 100%; height: 100%; overflow-y: auto; background: #fff; }
+
+        .header-purple { background-color: #820ad1; padding: 45px 20px 25px; color: white; position: relative; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .profile-circle { width: 45px; height: 45px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; }
+        
+        .section-clickable { padding: 25px 20px 10px; display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 18px; cursor: pointer; }
+        .main-balance { padding: 0 20px 20px; font-size: 22px; font-weight: 700; }
+        
+        /* MENU HORIZONTAL */
+        .scroll-menu { display: flex; overflow-x: auto; padding: 10px 20px; gap: 12px; scrollbar-width: none; }
+        .scroll-menu::-webkit-scrollbar { display: none; }
+        .menu-item { display: flex; flex-direction: column; align-items: center; min-width: 85px; text-align: center; cursor: pointer; }
+        .icon-bg { width: 72px; height: 72px; background-color: #f0f1f5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; position: relative; }
+        .badge-purple { background: #820ad1; color: white; font-size: 9px; font-weight: 700; padding: 2px 4px; border-radius: 3px; position: absolute; bottom: 0; }
+        
+        .my-cards { margin: 15px 20px; background-color: #f0f1f5; padding: 18px; border-radius: 12px; display: flex; align-items: center; gap: 15px; font-weight: 600; font-size: 14px; cursor: pointer; }
+        
+        /* CARDS DE PROMOÇÃO */
+        .promo-scroll { display: flex; overflow-x: auto; gap: 15px; padding: 0 20px; scrollbar-width: none; }
+        .promo-scroll::-webkit-scrollbar { display: none; }
+        .promo-card { background-color: #f0f1f5; padding: 22px; border-radius: 12px; min-width: 280px; max-width: 280px; font-size: 14px; line-height: 1.5; flex-shrink: 0; }
+
+        /* SEÇÃO CARTÃO DE CRÉDITO */
+        .cc-section { margin-top: 25px; padding-top: 25px; border-top: 2px solid #f0f1f5; }
+
+        /* --- OVERLAYS (TELAS QUE ABREM POR CIMA) --- */
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 999; padding: 20px; display: flex; flex-direction: column; overflow-y: auto; }
+        
+        /* BOTÃO SETA ROXA */
+        .fab-purple-arrow { position: fixed; bottom: 30px; right: 20px; width: 70px; height: 70px; background-color: #820ad1; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; z-index: 1010; box-shadow: 0 4px 15px rgba(130, 10, 209, 0.3); }
+
+        /* --- EFEITO CARREGANDO --- */
+        .loader { width: 24px; height: 24px; border: 3px solid #FFF; border-bottom-color: transparent; border-radius: 50%; display: none; animation: rotation 0.8s linear infinite; }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .btn-purple-wide { background: #820ad1; color: white; width: 100%; padding: 18px; border-radius: 35px; border: none; font-weight: 600; font-size: 18px; margin-top: auto; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+
+        /* --- COMPROVANTE (IMG 1000140564) --- */
+        .nu-logo { color: #820ad1; font-weight: 700; font-size: 28px; letter-spacing: -2px; margin: 10px 0 15px; }
+        .receipt-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .receipt-data-row { display: flex; justify-content: space-between; margin-bottom: 18px; font-size: 15px; }
+        .r-key { color: #000; }
+        .r-val { color: #666; text-align: right; max-width: 65%; }
+        .receipt-label-top { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 16px; margin: 30px 0 20px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0; }
+    </style>
+</head>
+<body>
+
+    <div id="home-screen">
+        <div class="header-purple">
+            <div class="header-top">
+                <div class="profile-circle"><i data-lucide="user" color="#fff"></i></div>
+                <div style="display:flex; gap:20px"><i data-lucide="eye"></i><i data-lucide="help-circle"></i><i data-lucide="user-plus"></i></div>
+            </div>
+            <div style="font-size:18px; font-weight:600;">Olá, <span class="editable" contenteditable="true">MD777</span></div>
+        </div>
+        
+        <div class="section-clickable">Conta <i data-lucide="chevron-right" size="20" color="#9e9e9e"></i></div>
+        <div class="main-balance"><span class="editable" contenteditable="true">R$ 10.000.000,00</span></div>
+        
+        <div class="scroll-menu">
+            <div class="menu-item" onclick="openStep('pix-val')"><div class="icon-bg"><i data-lucide="grid"></i></div><span>Área Pix</span></div>
+            <div class="menu-item"><div class="icon-bg"><i data-lucide="move-up-right"></i></div><span>Transferir</span></div>
+            <div class="menu-item"><div class="icon-bg"><i data-lucide="banknote"></i><div class="badge-purple">FGTS</div></div><span>Empréstimo</span></div>
+            <div class="menu-item"><div class="icon-bg"><i data-lucide="barcode"></i></div><span>Pagar</span></div>
+            <div class="menu-item"><div class="icon-bg"><i data-lucide="smartphone"></i></div><span>Recarga</span></div>
+            <div class="menu-item"><div class="icon-bg"><i data-lucide="heart"></i></div><span>Doação</span></div>
+        </div>
+
+        <div class="my-cards"><i data-lucide="credit-card"></i> Meus cartões</div>
+        
+        <div class="promo-scroll">
+            <div class="promo-card">Prêmios mensais com <span style="color:#820ad1; font-weight:600">Nubank Vida</span> a partir de R$ 4/mês.</div>
+            <div class="promo-card">Convide amigos e ganhe <span style="color:#820ad1; font-weight:600">descontos exclusivos</span>.</div>
+        </div>
+
+        <div class="cc-section">
+            <div class="section-clickable">Cartão de Crédito <i data-lucide="chevron-right" size="20" color="#9e9e9e"></i></div>
+            <div style="padding:0 20px 40px">
+                <div style="color:#666; font-size:14px">Fatura atual</div>
+                <div style="font-size:22px; font-weight:700" class="editable" contenteditable="true">R$ 99.999,99</div>
+                <div style="color:#666; font-size:14px; margin-top:5px">Limite disponível de R$ 500.000,00</div>
+            </div>
+        </div>
+
+        <div style="height: 100px;"></div>
+    </div>
+
+    <div id="pix-val" class="overlay hidden">
+        <div style="display:flex; justify-content:space-between"><i data-lucide="x" onclick="closeAll()"></i><i data-lucide="qr-code" color="#820ad1"></i></div>
+        <h1 style="font-size:26px; font-weight:600; margin:20px 0 10px;">Qual é o valor da transferência?</h1>
+        <div style="font-size:36px; font-weight:700; border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:25px">
+            <span id="input-val" class="editable" contenteditable="true">R$ 100.000,00</span>
+        </div>
+        <button class="fab-purple-arrow" onclick="openStep('pix-contacts')"><i data-lucide="arrow-right" color="#fff" size="38"></i></button>
+    </div>
+
+    <div id="pix-contacts" class="overlay hidden">
+        <i data-lucide="chevron-left" onclick="openStep('pix-val')" style="cursor:pointer"></i>
+        <h1 style="font-size:24px; font-weight:600; margin:20px 0;">Para quem você quer transferir <span id="contact-title-val">R$ 0,00</span>?</h1>
+        <div class="editable" contenteditable="true" style="border-bottom:1px solid #ccc; width:100%; color:#999; margin-bottom:30px; font-size:16px;">Nome, CPF/CNPJ ou chave Pix</div>
+        <div style="display:flex; align-items:center; cursor:pointer" onclick="selectContact('Maria Santa Alves Coelho')">
+            <div style="width:50px; height:50px; background:#f0f1f5; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-right:15px; font-weight:600">MS</div>
+            <b>Maria Santa Alves Coelho</b>
+        </div>
+        <button class="fab-purple-arrow" onclick="openStep('pix-final')"><i data-lucide="arrow-right" color="#fff" size="38"></i></button>
+    </div>
+
+    <div id="pix-final" class="overlay hidden">
+        <i data-lucide="chevron-left" onclick="openStep('pix-contacts')" style="cursor:pointer"></i>
+        <h1 style="font-size:24px; font-weight:600; margin:25px 0 10px;">Transferindo</h1>
+        <div style="font-size:32px; font-weight:700; color:#820ad1; margin-bottom:5px" id="final-val" class="editable" contenteditable="true">R$ 0,00</div>
+        <div style="margin-bottom:35px;">para <b id="final-name" class="editable" contenteditable="true">Maria Santa Alves Coelho</b></div>
+        <div class="receipt-data-row"><span class="r-key">CPF</span><span class="r-val editable" contenteditable="true">**.639.347-**</span></div>
+        <div class="receipt-data-row"><span class="r-key">Instituição</span><span class="r-val editable" contenteditable="true">BCO BANESTES S.A.</span></div>
+        
+        <button class="btn-purple-wide" onclick="startLoading()">
+            <span id="btn-text">Revisar transferência</span>
+            <span id="btn-loader" class="loader"></span>
+        </button>
+    </div>
+
+    <div id="pix-receipt" class="overlay hidden">
+        <div class="receipt-header">
+            <i data-lucide="x" onclick="closeAll()" style="cursor:pointer"></i>
+            <i data-lucide="share-2" style="cursor:pointer"></i>
+        </div>
+        <div class="nu-logo">nu</div>
+        <h1 style="font-size:24px; font-weight:600; margin-bottom:5px;">Comprovante de transferência</h1>
+        <div class="editable" contenteditable="true" style="color:#666; font-size:14px; margin-bottom:25px;">30 NOV. 2025 - 18:21:52</div>
+
+        <div class="receipt-data-row"><span>Valor</span><b class="editable" contenteditable="true" id="receipt-val" style="color:#000">R$ 0,00</b></div>
+        
+        <div class="receipt-label-top"><i data-lucide="move-down-left" size="18"></i> Destino</div>
+        <div class="receipt-data-row"><span>Nome</span><span class="r-val editable" contenteditable="true" id="receipt-name">Maria Santa Alves Coelho</span></div>
+        <div class="receipt-data-row"><span>CPF</span><span class="r-val editable" contenteditable="true">**.639.347-**</span></div>
+        <div class="receipt-data-row"><span>Instituição</span><span class="r-val editable" contenteditable="true">BCO BANESTES S.A.</span></div>
+        <div class="receipt-data-row"><span>Agência</span><span class="r-val editable" contenteditable="true">0140</span></div>
+        <div class="receipt-data-row"><span>Conta</span><span class="r-val editable" contenteditable="true">8532343</span></div>
+        <div class="receipt-data-row"><span>Tipo de conta</span><span class="r-val editable" contenteditable="true">Conta corrente</span></div>
+
+        <div class="receipt-label-top"><i data-lucide="move-up-right" size="18"></i> Origem</div>
+        <div class="receipt-data-row"><span>Nome</span><span class="r-val editable" contenteditable="true">MD777</span></div>
+        <div class="receipt-data-row"><span>Instituição</span><span class="r-val">NU PAGAMENTOS S.A.</span></div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        function openStep(id) {
+            document.querySelectorAll('.overlay, #home-screen').forEach(el => el.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            const valor = document.getElementById('input-val').innerText;
+            if(id === 'pix-contacts') document.getElementById('contact-title-val').innerText = valor;
+            if(id === 'pix-final') document.getElementById('final-val').innerText = valor;
+            if(id === 'pix-receipt') {
+                document.getElementById('receipt-val').innerText = valor;
+                document.getElementById('receipt-name').innerText = document.getElementById('final-name').innerText;
+            }
+            lucide.createIcons();
+        }
+
+        function startLoading() {
+            document.getElementById('btn-text').style.display = 'none';
+            document.getElementById('btn-loader').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('btn-text').style.display = 'block';
+                document.getElementById('btn-loader').style.display = 'none';
+                openStep('pix-receipt');
+            }, 1500);
+        }
+
+        function closeAll() { 
+            document.querySelectorAll('.overlay').forEach(el => el.classList.add('hidden'));
+            document.getElementById('home-screen').classList.remove('hidden');
+        }
+
+        function selectContact(name) { 
+            document.getElementById('final-name').innerText = name;
+            openStep('pix-final');
+        }
+    </script>
+</body>
+</html>
